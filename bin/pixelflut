@@ -1,0 +1,11 @@
+#!/usr/bin/env node
+
+'use strict';
+
+const { Pixelflut } = require('../dist');
+new Pixelflut('localhost', 8080)
+  .send(200, 200, 'ff0000')
+  .then(data => {
+    if (data) console.log(data);
+  })
+  .catch(err => console.error(err));

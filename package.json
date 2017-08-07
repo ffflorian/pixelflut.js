@@ -1,0 +1,27 @@
+{
+  "author": "Florian Keller <github@floriankeller.de>",
+  "bin": "bin/pixelflut",
+  "dependencies": {
+    "@types/node": "8.0.19"
+  },
+  "devDependencies": {
+    "jasmine": "2.7.0",
+    "rimraf": "2.6.1",
+    "typescript": "2.4.2",
+    "webpack": "3.4.1"
+  },
+  "license": "MIT",
+  "main": "dist/index.js",
+  "name": "pixelflut",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ffflorian/pixelflut.js.git"
+  },
+  "scripts": {
+    "clear": "rimraf dist",
+    "dist": "yarn clear && tsc",
+    "test": "yarn dist && jasmine"
+  },
+  "types": "./dist/index.d.ts",
+  "version": "1.0.0"
+}
