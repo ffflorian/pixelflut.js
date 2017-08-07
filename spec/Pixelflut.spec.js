@@ -3,13 +3,29 @@
 const { Pixelflut } = require('../dist');
 
 describe(Pixelflut, () => {
-  const pf = new Pixelflut('localhost', 8080);
+  const pf = new Pixelflut('localhost', 8080, 0);
 
-  it('sends a message', done => {
+  it('sends a pixel', done => {
     pf
-      .send(200, 200, 'ff0000')
+      .sendPixel(200, 200, 'ff0000')
       .then(data => {
         if (data) console.log(data);
+        done();
+      })
+      .catch(err => done.fail(err));
+  });
+
+  it('sends many pixels', done => {
+    const pixels = Array.from(Array(100), (_, i) => ({
+      x: i,
+      y: i,
+      color: '00ff00'
+    }));
+
+    pf
+      .sendPixels(pixels)
+      .then(data => {
+        if (data) console.log('data', data);
         done();
       })
       .catch(err => done.fail(err));
