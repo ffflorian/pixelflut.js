@@ -1,25 +1,30 @@
 {
   "author": "Florian Keller <github@floriankeller.de>",
-  "bin": "bin/pixelflut",
-  "dependencies": {
-    "@types/node": "8.0.19"
+  "bin": {
+    "pixelflut": "bin/pixelflut"
   },
   "devDependencies": {
-    "jasmine": "2.7.0",
-    "rimraf": "2.6.1",
-    "typescript": "2.4.2",
-    "webpack": "3.4.1"
+    "@types/node": "10.12.18",
+    "jasmine": "3.3.1",
+    "prettier": "1.15.3",
+    "rimraf": "2.6.2",
+    "tslint": "5.12.0",
+    "tslint-config-prettier": "1.17.0",
+    "tslint-plugin-prettier": "2.0.1",
+    "typescript": "3.2.2",
+    "webpack": "4.28.3"
   },
   "license": "MIT",
   "main": "dist/index.js",
   "name": "pixelflut",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ffflorian/pixelflut.js.git"
-  },
+  "repository": "https://github.com/ffflorian/pixelflut.js.git",
   "scripts": {
     "clear": "rimraf dist",
     "dist": "yarn clear && tsc",
+    "lint": "yarn lint:ts && yarn lint:other",
+    "lint:other": "yarn prettier --list-different",
+    "lint:ts": "tslint --config tslint.json --project tsconfig.json \"**/*.ts\"",
+    "prettier": "prettier --ignore-path .gitignore --write \"**/*.ts\"",
     "test": "yarn dist && jasmine"
   },
   "types": "./dist/index.d.ts",
