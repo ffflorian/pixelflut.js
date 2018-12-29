@@ -2,7 +2,7 @@
   "author": "Florian Keller <github@floriankeller.de>",
   "bin": "bin/pixelflut",
   "dependencies": {
-    "@types/node": "8.0.19"
+    "@types/node": "10.12.18"
   },
   "devDependencies": {
     "jasmine": "2.7.0",
