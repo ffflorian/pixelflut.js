@@ -4,7 +4,7 @@
     "pixelflut": "bin/pixelflut"
   },
   "devDependencies": {
-    "@types/node": "10.12.18",
+    "@types/node": "10.12.19",
     "jasmine": "3.3.1",
     "prettier": "1.16.1",
     "rimraf": "2.6.3",
