@@ -1,12 +1,11 @@
 import * as dgram from 'dgram';
 import * as net from 'net';
-import {StringDecoder} from 'string_decoder';
 
-export class Pixelflut {
+class Pixelflut {
   private readonly server: string;
   private readonly port: number;
-  private udpSocket: dgram.Socket;
-  private tcpSocket: net.Socket;
+  private udpSocket?: dgram.Socket;
+  private tcpSocket?: net.Socket;
   private readonly udp: boolean = false;
   private readonly errorTolerance: number;
   public errors: string[] = [];
@@ -23,7 +22,7 @@ export class Pixelflut {
     }
   }
 
-  public createTCPConnection(): Promise<void> {
+  public createTCPConnection(): Promise<string> {
     return new Promise((resolve, reject) => {
       let data: string;
 
@@ -33,18 +32,18 @@ export class Pixelflut {
         .on('data', bytes => {
           data += bytes.toString('utf8');
         })
-        .on('error', err => {
-          if (this.failed(err.message)) {
-            reject(err.message);
+        .on('error', error => {
+          if (this.failed(error.message)) {
+            reject(error);
           } else {
             resolve();
           }
         })
         .on('close', () => {
           if (this.failed('TCP Connection closed')) {
-            reject('TCP Connection closed');
+            reject(new Error('TCP Connection closed'));
           } else {
-            resolve();
+            resolve(data);
           }
         });
 
@@ -54,43 +53,48 @@ export class Pixelflut {
 
   public createUDPConnection(): Promise<void> {
     return new Promise((resolve, reject) => {
+      this.udpSocket = dgram.createSocket('udp4');
       let data: string;
 
-      this.udpSocket = dgram.createSocket('udp4');
-
       this.udpSocket
-        .on('data', bytes => {
-          data += bytes.toString('utf8');
-        })
-        .on('error', err => {
-          if (this.failed(err.message)) {
-            reject(err.message);
+        .on('data', bytes => (data += bytes.toString('utf8')))
+        .on('error', error => {
+          if (this.failed(error.message)) {
+            reject(error);
           } else {
             resolve();
           }
         })
         .on('close', () => {
           if (this.failed('UDP Connection closed')) {
-            reject('UDP Connection closed');
+            reject(new Error('UDP Connection closed'));
           } else {
             resolve();
           }
         });
 
-      this.tcpSocket.connect(this.port, this.server, () => resolve());
+      if (this.tcpSocket) {
+        this.tcpSocket.connect(this.port, this.server, () => resolve());
+      } else {
+        reject(new Error('No TCP socket available'));
+      }
     });
   }
 
-  private writeToUDP(message: string): Promise<any> {
-    return new Promise((resolve, reject) =>
-      this.udpSocket.send(message, 0, message.length, this.port, this.server, (err, bytes) => {
-        if (err) {
-          reject(err);
-        } else if (bytes) {
-          resolve(bytes.toString());
-        }
-      })
-    );
+  public writeToUDP(message: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (this.udpSocket) {
+        this.udpSocket.send(message, 0, message.length, this.port, this.server, (err, bytes) => {
+          if (err) {
+            reject(err);
+          } else if (bytes) {
+            resolve(bytes.toString());
+          }
+        });
+      } else {
+        reject(new Error('No UDP socket available'));
+      }
+    });
   }
 
   private failed(message: string): boolean {
@@ -122,13 +126,15 @@ export class Pixelflut {
 
   private writeToTCP(message: string): Promise<any> {
     return new Promise((resolve, reject) => {
-      this.tcpSocket.write(message, err => {
-        if (err) {
-          reject(err.message);
-        } else {
-          resolve();
-        }
-      });
+      if (this.tcpSocket) {
+        this.tcpSocket.write(message, error => {
+          error ? reject(error) : resolve();
+        });
+      } else {
+        reject(new Error('No TCP socket available'));
+      }
     });
   }
 }
+
+export {Pixelflut};

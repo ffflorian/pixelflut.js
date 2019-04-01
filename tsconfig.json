@@ -1,23 +1,22 @@
 {
   "compilerOptions": {
+    "alwaysStrict": true,
     "declaration": true,
-    "lib": [
-      "dom",
-      "es6"
-    ],
+    "forceConsistentCasingInFileNames": true,
+    "lib": ["es2018"],
     "module": "commonjs",
     "moduleResolution": "node",
     "noEmitOnError": true,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "noImplicitReturns": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
     "outDir": "dist",
-    "removeComments": true,
     "rootDir": "src",
-    "sourceMap": false,
-    "target": "ES5"
+    "sourceMap": true,
+    "strict": true,
+    "strictFunctionTypes": true,
+    "target": "es6"
   },
-  "exclude": [
-    "dist",
-    "node_modules"
-  ]
+  "exclude": ["dist", "node_modules", "spec"]
 }
