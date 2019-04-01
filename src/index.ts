@@ -109,7 +109,7 @@ class Pixelflut {
     return this.createTCPConnection().then(() => this.writeToTCP(message));
   }
 
-  public sendPixels(pixels: Array<{x: number; y: number; color: string}>): Promise<any> {
+  public sendPixels(pixels: Array<{x: number; y: number; color: string}>): Promise<string[]> {
     console.log(
       `Sending ${pixels.length} pixels from <${pixels[0].x}, ${pixels[pixels.length - 1].y}> to <${
         pixels[pixels.length - 1].x
