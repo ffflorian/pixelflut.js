@@ -4,7 +4,7 @@
     "pixelflut": "dist/cli.js"
   },
   "devDependencies": {
-    "@ffflorian/prettier-config": "0.0.3",
+    "@ffflorian/prettier-config": "0.0.4",
     "@ffflorian/tslint-config": "0.2.0",
     "@types/jasmine": "3.3.12",
     "@types/node": "12.0.2",
