@@ -2,13 +2,13 @@ import * as dgram from 'dgram';
 import * as net from 'net';
 
 class Pixelflut {
+  public errors: string[] = [];
   private readonly server: string;
   private readonly port: number;
   private udpSocket?: dgram.Socket;
   private tcpSocket?: net.Socket;
   private readonly udp: boolean = false;
   private readonly errorTolerance: number;
-  public errors: string[] = [];
 
   constructor(server: string, port: number, errorTolerance: number = 10, udp: boolean = false) {
     this.server = server;
@@ -97,11 +97,6 @@ class Pixelflut {
     });
   }
 
-  private failed(message: string): boolean {
-    this.errors.push(message);
-    return this.errors.length > this.errorTolerance;
-  }
-
   public sendPixel(x: number, y: number, color: string): Promise<string> {
     console.log(`Sending #${color} at <${x}, ${y}> over ${this.udp ? 'UDP' : 'TCP'} to ${this.server}:${this.port}`);
 
@@ -122,6 +117,11 @@ class Pixelflut {
         values.filter(value => typeof value !== 'undefined')
       )
     );
+  }
+
+  private failed(message: string): boolean {
+    this.errors.push(message);
+    return this.errors.length > this.errorTolerance;
   }
 
   private writeToTCP(message: string): Promise<any> {
