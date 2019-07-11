@@ -1,7 +1,7 @@
 import * as dgram from 'dgram';
 import * as net from 'net';
 
-class Pixelflut {
+export class Pixelflut {
   public errors: string[] = [];
   private readonly server: string;
   private readonly port: number;
@@ -29,9 +29,7 @@ class Pixelflut {
       this.tcpSocket = new net.Socket();
 
       this.tcpSocket
-        .on('data', bytes => {
-          data += bytes.toString('utf8');
-        })
+        .on('data', bytes => (data += bytes.toString('utf8')))
         .on('error', error => {
           if (this.failed(error.message)) {
             reject(error);
@@ -97,26 +95,25 @@ class Pixelflut {
     });
   }
 
-  public sendPixel(x: number, y: number, color: string): Promise<string> {
+  public async sendPixel(x: number, y: number, color: string): Promise<string> {
     console.log(`Sending #${color} at <${x}, ${y}> over ${this.udp ? 'UDP' : 'TCP'} to ${this.server}:${this.port}`);
 
     const message = `PX ${x} ${y} ${color}\n`;
-    return this.createTCPConnection().then(() => this.writeToTCP(message));
+    await this.createTCPConnection();
+    return this.writeToTCP(message);
   }
 
-  public sendPixels(pixels: Array<{x: number; y: number; color: string}>): Promise<string[]> {
+  public async sendPixels(pixels: Array<{x: number; y: number; color: string}>): Promise<string[]> {
     console.log(
       `Sending ${pixels.length} pixels from <${pixels[0].x}, ${pixels[pixels.length - 1].y}> to <${
         pixels[pixels.length - 1].x
       }, ${pixels[0].y}> over ${this.udp ? 'UDP' : 'TCP'} to ${this.server}:${this.port}`
     );
-    const messages: string[] = pixels.map(pixel => `PX ${pixel.x} ${pixel.y} ${pixel.color}\n`);
+    const messages = pixels.map(pixel => `PX ${pixel.x} ${pixel.y} ${pixel.color}\n`);
 
-    return this.createTCPConnection().then(() =>
-      Promise.all(messages.map(message => this.writeToTCP(message))).then(values =>
-        values.filter(value => typeof value !== 'undefined')
-      )
-    );
+    await this.createTCPConnection();
+    const values = await Promise.all(messages.map(message => this.writeToTCP(message)));
+    return values.filter(value => typeof value !== 'undefined');
   }
 
   private failed(message: string): boolean {
@@ -127,14 +124,10 @@ class Pixelflut {
   private writeToTCP(message: string): Promise<any> {
     return new Promise((resolve, reject) => {
       if (this.tcpSocket) {
-        this.tcpSocket.write(message, error => {
-          error ? reject(error) : resolve();
-        });
+        this.tcpSocket.write(message, error => (error ? reject(error) : resolve()));
       } else {
         reject(new Error('No TCP socket available'));
       }
     });
   }
 }
-
-export {Pixelflut};
