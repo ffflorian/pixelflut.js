@@ -1,24 +1,39 @@
 import * as dgram from 'dgram';
+import * as fs from 'fs';
 import * as net from 'net';
+import * as path from 'path';
+import {promisify} from 'util';
+
+import * as ImageTools from './ImageTools';
+
+export interface Options {
+  /** Default is 10 */
+  errorTolerance?: number;
+  port: number;
+  server: string;
+  /** Default is `false` */
+  udp?: boolean;
+}
+
+const defaultOptions: Required<Options> = {
+  errorTolerance: 10,
+  port: 1234,
+  server: 'localhost',
+  udp: false,
+};
 
 export class Pixelflut {
   public errors: string[] = [];
-  private readonly server: string;
-  private readonly port: number;
   private udpSocket?: dgram.Socket;
   private tcpSocket?: net.Socket;
-  private readonly udp: boolean = false;
-  private readonly errorTolerance: number;
+  private readonly options: Required<Options>;
 
-  constructor(server: string, port: number, errorTolerance: number = 10, udp: boolean = false) {
-    this.server = server;
-    this.port = port;
-    this.udp = udp;
-    this.errorTolerance = errorTolerance;
+  constructor(options?: Options) {
+    this.options = {...defaultOptions, ...options};
 
-    if (udp) {
+    if (this.options.udp) {
       console.info('Note: UDP is not supported right now. Switching to TCP.');
-      this.udp = false;
+      this.options.udp = false;
     }
   }
 
@@ -45,7 +60,7 @@ export class Pixelflut {
           }
         });
 
-      this.tcpSocket.connect(this.port, this.server, () => resolve());
+      this.tcpSocket.connect(this.options.port, this.options.server, () => resolve());
     });
   }
 
@@ -72,7 +87,7 @@ export class Pixelflut {
         });
 
       if (this.tcpSocket) {
-        this.tcpSocket.connect(this.port, this.server, () => resolve());
+        this.tcpSocket.connect(this.options.port, this.options.server, () => resolve());
       } else {
         reject(new Error('No TCP socket available'));
       }
@@ -82,7 +97,7 @@ export class Pixelflut {
   public writeToUDP(message: string): Promise<any> {
     return new Promise((resolve, reject) => {
       if (this.udpSocket) {
-        this.udpSocket.send(message, 0, message.length, this.port, this.server, (err, bytes) => {
+        this.udpSocket.send(message, 0, message.length, this.options.port, this.options.server, (err, bytes) => {
           if (err) {
             reject(err);
           } else if (bytes) {
@@ -95,8 +110,19 @@ export class Pixelflut {
     });
   }
 
+  public async sendImage(fileName: string): Promise<string> {
+    const resolvedFile = path.resolve(fileName);
+    const buffer = await promisify(fs.readFile)(resolvedFile);
+    await ImageTools.parseImage(buffer, resolvedFile);
+    return '';
+  }
+
   public async sendPixel(x: number, y: number, color: string): Promise<string> {
-    console.log(`Sending #${color} at <${x}, ${y}> over ${this.udp ? 'UDP' : 'TCP'} to ${this.server}:${this.port}`);
+    console.log(
+      `Sending #${color} at <${x}, ${y}> over ${this.options.udp ? 'UDP' : 'TCP'} to ${this.options.server}:${
+        this.options.port
+      }`
+    );
 
     const message = `PX ${x} ${y} ${color}\n`;
     await this.createTCPConnection();
@@ -107,7 +133,7 @@ export class Pixelflut {
     console.log(
       `Sending ${pixels.length} pixels from <${pixels[0].x}, ${pixels[pixels.length - 1].y}> to <${
         pixels[pixels.length - 1].x
-      }, ${pixels[0].y}> over ${this.udp ? 'UDP' : 'TCP'} to ${this.server}:${this.port}`
+      }, ${pixels[0].y}> over ${this.options.udp ? 'UDP' : 'TCP'} to ${this.options.server}:${this.options.port}`
     );
     const messages = pixels.map(pixel => `PX ${pixel.x} ${pixel.y} ${pixel.color}\n`);
 
@@ -118,7 +144,7 @@ export class Pixelflut {
 
   private failed(message: string): boolean {
     this.errors.push(message);
-    return this.errors.length > this.errorTolerance;
+    return this.errors.length > this.options.errorTolerance;
   }
 
   private writeToTCP(message: string): Promise<any> {
