@@ -46,7 +46,7 @@
   "main": "dist/index.js",
   "name": "pixelflut",
   "prettier": "@ffflorian/prettier-config",
-  "repository": "https://github.com/ffflorian/pixelflut.js.git",
+  "repository": "https://github.com/ffflorian/pixelflut.git",
   "scripts": {
     "build": "tsc",
     "clean": "rimraf dist",
