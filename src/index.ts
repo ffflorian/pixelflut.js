@@ -3,12 +3,12 @@ import * as net from 'net';
 
 export class Pixelflut {
   public errors: string[] = [];
-  private readonly server: string;
+  private readonly errorTolerance: number;
   private readonly port: number;
-  private udpSocket?: dgram.Socket;
+  private readonly server: string;
   private tcpSocket?: net.Socket;
   private readonly udp: boolean = false;
-  private readonly errorTolerance: number;
+  private udpSocket?: dgram.Socket;
 
   constructor(server: string, port: number, errorTolerance: number = 10, udp: boolean = false) {
     this.server = server;
@@ -79,6 +79,27 @@ export class Pixelflut {
     });
   }
 
+  public async sendPixel(x: number, y: number, color: string): Promise<string> {
+    console.log(`Sending #${color} at <${x}, ${y}> over ${this.udp ? 'UDP' : 'TCP'} to ${this.server}:${this.port}`);
+
+    const message = `PX ${x} ${y} ${color}\n`;
+    await this.createTCPConnection();
+    return this.writeToTCP(message);
+  }
+
+  public async sendPixels(pixels: Array<{color: string; x: number; y: number}>): Promise<string[]> {
+    console.log(
+      `Sending ${pixels.length} pixels from <${pixels[0].x}, ${pixels[pixels.length - 1].y}> to <${
+        pixels[pixels.length - 1].x
+      }, ${pixels[0].y}> over ${this.udp ? 'UDP' : 'TCP'} to ${this.server}:${this.port}`
+    );
+    const messages = pixels.map(pixel => `PX ${pixel.x} ${pixel.y} ${pixel.color}\n`);
+
+    await this.createTCPConnection();
+    const values = await Promise.all(messages.map(message => this.writeToTCP(message)));
+    return values.filter(value => typeof value !== 'undefined');
+  }
+
   public writeToUDP(message: string): Promise<any> {
     return new Promise((resolve, reject) => {
       if (this.udpSocket) {
@@ -93,27 +114,6 @@ export class Pixelflut {
         reject(new Error('No UDP socket available'));
       }
     });
-  }
-
-  public async sendPixel(x: number, y: number, color: string): Promise<string> {
-    console.log(`Sending #${color} at <${x}, ${y}> over ${this.udp ? 'UDP' : 'TCP'} to ${this.server}:${this.port}`);
-
-    const message = `PX ${x} ${y} ${color}\n`;
-    await this.createTCPConnection();
-    return this.writeToTCP(message);
-  }
-
-  public async sendPixels(pixels: Array<{x: number; y: number; color: string}>): Promise<string[]> {
-    console.log(
-      `Sending ${pixels.length} pixels from <${pixels[0].x}, ${pixels[pixels.length - 1].y}> to <${
-        pixels[pixels.length - 1].x
-      }, ${pixels[0].y}> over ${this.udp ? 'UDP' : 'TCP'} to ${this.server}:${this.port}`
-    );
-    const messages = pixels.map(pixel => `PX ${pixel.x} ${pixel.y} ${pixel.color}\n`);
-
-    await this.createTCPConnection();
-    const values = await Promise.all(messages.map(message => this.writeToTCP(message)));
-    return values.filter(value => typeof value !== 'undefined');
   }
 
   private failed(message: string): boolean {
