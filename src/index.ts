@@ -24,9 +24,9 @@ const defaultOptions: Required<Options> = {
 
 export class Pixelflut {
   public errors: string[] = [];
-  private udpSocket?: dgram.Socket;
-  private tcpSocket?: net.Socket;
   private readonly options: Required<Options>;
+  private tcpSocket?: net.Socket;
+  private udpSocket?: dgram.Socket;
 
   constructor(options?: Options) {
     this.options = {...defaultOptions, ...options};
@@ -94,22 +94,6 @@ export class Pixelflut {
     });
   }
 
-  public writeToUDP(message: string): Promise<any> {
-    return new Promise((resolve, reject) => {
-      if (this.udpSocket) {
-        this.udpSocket.send(message, 0, message.length, this.options.port, this.options.server, (err, bytes) => {
-          if (err) {
-            reject(err);
-          } else if (bytes) {
-            resolve(bytes.toString());
-          }
-        });
-      } else {
-        reject(new Error('No UDP socket available'));
-      }
-    });
-  }
-
   public async sendImage(fileName: string): Promise<string> {
     const resolvedFile = path.resolve(fileName);
     const buffer = await promisify(fs.readFile)(resolvedFile);
@@ -129,7 +113,7 @@ export class Pixelflut {
     return this.writeToTCP(message);
   }
 
-  public async sendPixels(pixels: Array<{x: number; y: number; color: string}>): Promise<string[]> {
+  public async sendPixels(pixels: Array<{color: string; x: number; y: number}>): Promise<string[]> {
     console.log(
       `Sending ${pixels.length} pixels from <${pixels[0].x}, ${pixels[pixels.length - 1].y}> to <${
         pixels[pixels.length - 1].x
@@ -140,6 +124,22 @@ export class Pixelflut {
     await this.createTCPConnection();
     const values = await Promise.all(messages.map(message => this.writeToTCP(message)));
     return values.filter(value => typeof value !== 'undefined');
+  }
+
+  public writeToUDP(message: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (this.udpSocket) {
+        this.udpSocket.send(message, 0, message.length, this.options.port, this.options.server, (err, bytes) => {
+          if (err) {
+            reject(err);
+          } else if (bytes) {
+            resolve(bytes.toString());
+          }
+        });
+      } else {
+        reject(new Error('No UDP socket available'));
+      }
+    });
   }
 
   private failed(message: string): boolean {
