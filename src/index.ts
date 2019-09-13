@@ -10,6 +10,7 @@ export interface Options {
   /** Default is 10 */
   errorTolerance?: number;
   port: number;
+  /** Where the server runs */
   server: string;
   /** Default is `false` */
   udp?: boolean;
