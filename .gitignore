@@ -1,7 +1,5 @@
-.yarnclean
-/.idea
-/bower_components
-/dist
-/node_modules
-/npm-debug.log*
-/package-lock.json
+dist/
+node_modules/
+package-lock.json
+.log
+flattened
