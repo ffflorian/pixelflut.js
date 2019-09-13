@@ -3,7 +3,7 @@
 import * as commander from 'commander';
 import {Pixelflut} from './';
 
-const {name, version, description}: {name: string; version: string; description: string} = require('../package.json');
+const {description, name, version}: {description: string; name: string; version: string} = require('../package.json');
 
 commander
   .name(name)
