@@ -1,7 +1,7 @@
 import {Pixelflut} from '../src';
 
 xdescribe('Pixelflut', () => {
-  const pf = new Pixelflut('localhost', 8080, 0);
+  const pf = new Pixelflut({errorTolerance: 0, port: 8080, server: 'localhost'});
 
   it('sends a pixel', done => {
     pf.sendPixel(200, 200, 'ff0000')
