@@ -10,6 +10,7 @@ export class Pixelflut {
   private readonly udp: boolean = false;
   private udpSocket?: dgram.Socket;
 
+  // eslint-disable-next-line no-magic-numbers
   constructor(server: string, port: number, errorTolerance: number = 10, udp: boolean = false) {
     this.server = server;
     this.port = port;
@@ -79,21 +80,25 @@ export class Pixelflut {
     });
   }
 
-  public async sendPixel(x: number, y: number, color: string): Promise<string> {
-    console.log(`Sending #${color} at <${x}, ${y}> over ${this.udp ? 'UDP' : 'TCP'} to ${this.server}:${this.port}`);
+  public async sendPixel(xPosition: number, yPosition: number, color: string): Promise<string> {
+    console.info(
+      `Sending #${color} at <${xPosition}, ${yPosition}> over ${this.udp ? 'UDP' : 'TCP'} to ${this.server}:${
+        this.port
+      }`
+    );
 
-    const message = `PX ${x} ${y} ${color}\n`;
+    const message = `PX ${xPosition} ${yPosition} ${color}\n`;
     await this.createTCPConnection();
     return this.writeToTCP(message);
   }
 
-  public async sendPixels(pixels: Array<{color: string; x: number; y: number}>): Promise<string[]> {
-    console.log(
-      `Sending ${pixels.length} pixels from <${pixels[0].x}, ${pixels[pixels.length - 1].y}> to <${
-        pixels[pixels.length - 1].x
-      }, ${pixels[0].y}> over ${this.udp ? 'UDP' : 'TCP'} to ${this.server}:${this.port}`
+  public async sendPixels(pixels: {color: string; xPosition: number; yPosition: number}[]): Promise<string[]> {
+    console.info(
+      `Sending ${pixels.length} pixels from <${pixels[0].xPosition}, ${pixels[pixels.length - 1].yPosition}> to <${
+        pixels[pixels.length - 1].xPosition
+      }, ${pixels[0].yPosition}> over ${this.udp ? 'UDP' : 'TCP'} to ${this.server}:${this.port}`
     );
-    const messages = pixels.map(pixel => `PX ${pixel.x} ${pixel.y} ${pixel.color}\n`);
+    const messages = pixels.map(pixel => `PX ${pixel.xPosition} ${pixel.yPosition} ${pixel.color}\n`);
 
     await this.createTCPConnection();
     const values = await Promise.all(messages.map(message => this.writeToTCP(message)));

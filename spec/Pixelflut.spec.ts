@@ -1,34 +1,28 @@
+/* eslint-disable no-magic-numbers */
+
 import {Pixelflut} from '../src';
 
 xdescribe('Pixelflut', () => {
   const pf = new Pixelflut('localhost', 8080, 0);
 
-  it('sends a pixel', done => {
-    pf.sendPixel(200, 200, 'ff0000')
-      .then(data => {
-        if (data) {
-          console.log(data);
-        }
-        done();
-      })
-      .catch(err => done.fail(err));
+  it('sends a pixel', async () => {
+    const data = await pf.sendPixel(200, 200, 'ff0000');
+    if (data) {
+      console.info(data);
+    }
   });
 
-  it('sends many pixels', done => {
-    const pixels = Array.from(Array(100), (_, i) => ({
+  it('sends many pixels', async () => {
+    const pixels = Array.from(Array(100), (_, index) => ({
       color: '00ff00',
-      x: i,
-      y: i,
+      xPosition: index,
+      yPosition: index,
     }));
 
-    pf.sendPixels(pixels)
-      .then(data => {
-        if (data) {
-          console.log('data', data);
-        }
-        done();
-      })
-      .catch(err => done.fail(err));
+    const data = await pf.sendPixels(pixels);
+    if (data) {
+      console.info('data', data);
+    }
   });
 });
 
