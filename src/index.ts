@@ -92,7 +92,7 @@ export class Pixelflut {
     return this.writeToTCP(message);
   }
 
-  public async sendPixels(pixels: {color: string; xPosition: number; yPosition: number}[]): Promise<string[]> {
+  public async sendPixels(pixels: Array<{color: string; xPosition: number; yPosition: number}>): Promise<string[]> {
     console.info(
       `Sending ${pixels.length} pixels from <${pixels[0].xPosition}, ${pixels[pixels.length - 1].yPosition}> to <${
         pixels[pixels.length - 1].xPosition
