@@ -4,14 +4,15 @@
 
 import {Pixelflut} from './';
 
-new Pixelflut('localhost', 8080, 0)
-  .sendPixel(200, 200, 'ff0000')
-  .then(data => {
+void (async () => {
+  try {
+    const data = await new Pixelflut('localhost', 8080, 0).sendPixel(200, 200, 'ff0000');
     if (data) {
       console.info('data:', data);
     }
-  })
-  .catch(error => {
+    process.exit();
+  } catch (error) {
     console.error(error);
     process.exit(1);
-  });
+  }
+})();
