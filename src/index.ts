@@ -23,7 +23,7 @@ export class Pixelflut {
     }
   }
 
-  public createTCPConnection(): Promise<string> {
+  public createTCPConnection(): Promise<string | void> {
     return new Promise((resolve, reject) => {
       let data: string;
 
@@ -35,7 +35,7 @@ export class Pixelflut {
           if (this.failed(error.message)) {
             reject(error);
           } else {
-            resolve();
+            resolve(undefined);
           }
         })
         .on('close', () => {
@@ -46,7 +46,7 @@ export class Pixelflut {
           }
         });
 
-      this.tcpSocket.connect(this.port, this.server, () => resolve());
+      this.tcpSocket.connect(this.port, this.server, () => resolve(undefined));
     });
   }
 
@@ -129,7 +129,7 @@ export class Pixelflut {
   private writeToTCP(message: string): Promise<any> {
     return new Promise((resolve, reject) => {
       if (this.tcpSocket) {
-        this.tcpSocket.write(message, error => (error ? reject(error) : resolve()));
+        this.tcpSocket.write(message, error => (error ? reject(error) : resolve(undefined)));
       } else {
         reject(new Error('No TCP socket available'));
       }
